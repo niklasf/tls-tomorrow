@@ -5,3 +5,5 @@ edition = "2018"
 
 [dependencies]
 clap = "3.0.0-beta.4"
+rustls = "0.19"
+webpki-roots = "0.21"

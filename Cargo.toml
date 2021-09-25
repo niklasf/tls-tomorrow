@@ -1,12 +1,15 @@
 [package]
-name = "check-tls-certs"
+name = "tls-tomorrow"
 version = "0.1.0"
+description = "Try to connect with TLS with manipulated system time"
+categories = ["command-line-utilities", "network-programming"]
+license = "GPL-3.0+"
 edition = "2018"
 
 [dependencies]
 clap = "3.0.0-beta.4"
-once_cell = "1.8.0"
+once_cell = "1"
 rustls = { version = "0.19", features = ["dangerous_configuration"] }
-rustls-native-certs = "0.5.0"
+rustls-native-certs = "0.5"
 webpki = "0.21"
 webpki-roots = "0.21"

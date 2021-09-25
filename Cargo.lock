@@ -50,18 +50,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "check-tls-certs"
-version = "0.1.0"
-dependencies = [
- "clap",
- "once_cell",
- "rustls",
- "rustls-native-certs",
- "webpki",
- "webpki-roots",
-]
-
-[[package]]
 name = "clap"
 version = "3.0.0-beta.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -354,6 +342,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0066c8d12af8b5acd21e00547c3797fde4e8677254a7ee429176ccebbe93dd80"
 dependencies = [
  "unicode-width",
+]
+
+[[package]]
+name = "tls-tomorrow"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "once_cell",
+ "rustls",
+ "rustls-native-certs",
+ "webpki",
+ "webpki-roots",
 ]
 
 [[package]]

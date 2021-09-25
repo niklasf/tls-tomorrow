@@ -1,6 +1,6 @@
-use std::io::{Read, Write};
 use std::sync::Arc;
 use std::time::Duration;
+use std::error::Error;
 
 use clap::Clap;
 use once_cell::sync::OnceCell;
@@ -8,7 +8,7 @@ use rustls::Session;
 
 #[derive(Clap, Debug)]
 struct Args {
-    domains: Vec<String>,
+    domain: Vec<String>,
     #[clap(flatten)]
     opt: Opt,
 }
@@ -41,17 +41,18 @@ fn main() {
 
     let config = Arc::new(config);
 
-    for domain in args.domains {
-        validate(&domain, &config);
+    for domain in args.domain {
+        match check(&domain, &config) {
+            Ok(()) => {},
+            Err(err) => println!("{} in {} days: {}", domain, args.opt.days, err),
+        }
     }
 }
 
-fn validate(domain: &str, config: &Arc<rustls::ClientConfig>) {
-    println!("checking {}", domain);
-    let subject = webpki::DNSNameRef::try_from_ascii_str(domain).unwrap();
+fn check(domain: &str, config: &Arc<rustls::ClientConfig>) -> Result<(), Box<dyn Error>> {
+    let subject = webpki::DNSNameRef::try_from_ascii_str(domain)?;
     let mut client = rustls::ClientSession::new(&config, subject);
-
-    let mut socket = std::net::TcpStream::connect((domain, 443)).unwrap();
-
-    client.complete_io(&mut socket).expect("complete io");
+    let mut socket = std::net::TcpStream::connect((domain, 443))?;
+    client.complete_io(&mut socket)?;
+    Ok(())
 }

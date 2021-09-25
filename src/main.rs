@@ -51,7 +51,7 @@ fn main() {
 
 fn check(domain: &str, config: &Arc<rustls::ClientConfig>) -> Result<(), Box<dyn Error>> {
     let subject = webpki::DNSNameRef::try_from_ascii_str(domain)?;
-    let mut client = rustls::ClientSession::new(&config, subject);
+    let mut client = rustls::ClientSession::new(config, subject);
     let mut socket = std::net::TcpStream::connect((domain, 443))?;
     client.complete_io(&mut socket)?;
     Ok(())

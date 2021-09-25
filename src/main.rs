@@ -1,4 +1,10 @@
+use std::io::{Read, Write};
+use std::sync::Arc;
+use std::time::Duration;
+
 use clap::Clap;
+use once_cell::sync::OnceCell;
+use rustls::Session;
 
 #[derive(Clap, Debug)]
 struct Args {
@@ -9,20 +15,43 @@ struct Args {
 
 #[derive(Clap, Debug)]
 struct Opt {
-    #[clap(short, long, default_value = "14")]
-    days: u32,
+    #[clap(short, long, default_value = "0")]
+    days: u64,
 }
+
+static DAYS: OnceCell<u64> = OnceCell::new();
 
 fn main() {
     let args = Args::parse();
+    DAYS.set(args.opt.days).unwrap();
+
+    let mut config = rustls::ClientConfig::new();
+    config.root_store = rustls_native_certs::load_native_certs().expect("platform certs");
+
+    let mut danger_zone = config.dangerous();
+    danger_zone.set_certificate_verifier(Arc::new(rustls::WebPKIVerifier {
+        time: move || {
+            Ok(webpki::Time::try_from(
+                std::time::SystemTime::now()
+                    + Duration::from_secs(DAYS.get().expect("days initialized") * 24 * 60 * 60),
+            )
+            .unwrap())
+        },
+    }));
+
+    let config = Arc::new(config);
+
     for domain in args.domains {
-        validate(domain, &args.opt)
+        validate(&domain, &config);
     }
 }
 
-fn validate(domain: String, opt: &Opt) {
-    let mut config = rustls::ClientConfig::new();
-    config.root_store.add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+fn validate(domain: &str, config: &Arc<rustls::ClientConfig>) {
+    println!("checking {}", domain);
+    let subject = webpki::DNSNameRef::try_from_ascii_str(domain).unwrap();
+    let mut client = rustls::ClientSession::new(&config, subject);
 
+    let mut socket = std::net::TcpStream::connect((domain, 443)).unwrap();
 
+    client.complete_io(&mut socket).expect("complete io");
 }

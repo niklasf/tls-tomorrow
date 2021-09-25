@@ -1,6 +1,6 @@
+use std::error::Error;
 use std::sync::Arc;
 use std::time::Duration;
-use std::error::Error;
 
 use clap::Clap;
 use once_cell::sync::OnceCell;
@@ -19,13 +19,13 @@ struct Args {
 struct Opt {
     /// Offset for system clock.
     #[clap(short, long, default_value = "0")]
-    days: i32,
+    days: u32,
 }
-
-static DAYS: OnceCell<i32> = OnceCell::new();
 
 fn main() {
     let args = Args::parse();
+
+    static DAYS: OnceCell<u32> = OnceCell::new();
     DAYS.set(args.opt.days).unwrap();
 
     let mut config = rustls::ClientConfig::new();
@@ -36,7 +36,7 @@ fn main() {
         time: move || {
             Ok(webpki::Time::try_from(
                 std::time::SystemTime::now()
-                    + Duration::from_secs(DAYS.get().expect("days initialized") * 24 * 60 * 60),
+                    + Duration::from_secs(u64::from(*DAYS.get().unwrap()) * 24 * 60 * 60),
             )
             .unwrap())
         },
@@ -45,10 +45,9 @@ fn main() {
     let config = Arc::new(config);
 
     let mut success = true;
-
     for domain in args.domain {
         match check(&domain, &config) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(err) => {
                 println!("{} in {} days: {}", domain, args.opt.days, err);
                 success = false;
@@ -56,11 +55,7 @@ fn main() {
         }
     }
 
-    std::process::exit(if success {
-        0
-    } else {
-        1
-    });
+    std::process::exit(if success { 0 } else { 1 });
 }
 
 fn check(domain: &str, config: &Arc<rustls::ClientConfig>) -> Result<(), Box<dyn Error>> {

@@ -1,7 +1,7 @@
 [package]
 name = "tls-tomorrow"
 version = "0.1.0"
-description = "Try to connect with TLS with manipulated system time"
+description = "Try to make TLS connections with manipulated system time"
 categories = ["command-line-utilities", "network-programming"]
 license = "GPL-3.0+"
 edition = "2018"

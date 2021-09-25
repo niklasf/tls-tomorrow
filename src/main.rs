@@ -6,8 +6,10 @@ use clap::Clap;
 use once_cell::sync::OnceCell;
 use rustls::Session;
 
+/// Try to make TLS connections with manipulated system time.
 #[derive(Clap, Debug)]
 struct Args {
+    /// Domains to check.
     domain: Vec<String>,
     #[clap(flatten)]
     opt: Opt,
@@ -15,11 +17,12 @@ struct Args {
 
 #[derive(Clap, Debug)]
 struct Opt {
+    /// Offset for system clock.
     #[clap(short, long, default_value = "0")]
-    days: u64,
+    days: i32,
 }
 
-static DAYS: OnceCell<u64> = OnceCell::new();
+static DAYS: OnceCell<i32> = OnceCell::new();
 
 fn main() {
     let args = Args::parse();
@@ -41,12 +44,23 @@ fn main() {
 
     let config = Arc::new(config);
 
+    let mut success = true;
+
     for domain in args.domain {
         match check(&domain, &config) {
             Ok(()) => {},
-            Err(err) => println!("{} in {} days: {}", domain, args.opt.days, err),
+            Err(err) => {
+                println!("{} in {} days: {}", domain, args.opt.days, err);
+                success = false;
+            }
         }
     }
+
+    std::process::exit(if success {
+        0
+    } else {
+        1
+    });
 }
 
 fn check(domain: &str, config: &Arc<rustls::ClientConfig>) -> Result<(), Box<dyn Error>> {

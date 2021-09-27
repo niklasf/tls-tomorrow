@@ -45,11 +45,12 @@ fn main() {
         .with_root_certificates(root_store.clone())
         .with_no_client_auth();
 
-    let mut danger_zone = config.dangerous();
-    danger_zone.set_certificate_verifier(Arc::new(DelayedVerifier {
-        inner: rustls::client::WebPkiVerifier::new(root_store, None),
-        delay: Duration::from_secs(u64::from(args.opt.days) * 24 * 60 * 60),
-    }));
+    config
+        .dangerous()
+        .set_certificate_verifier(Arc::new(DelayedVerifier {
+            inner: rustls::client::WebPkiVerifier::new(root_store, None),
+            delay: Duration::from_secs(u64::from(args.opt.days) * 24 * 60 * 60),
+        }));
 
     let config = Arc::new(config);
 

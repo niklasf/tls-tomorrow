@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 clap = "3.0.0-beta.4"
 once_cell = "1"
-rustls = { version = "0.19", features = ["dangerous_configuration"] }
+rustls = { version = "0.20", features = ["dangerous_configuration"] }
 rustls-native-certs = "0.5"
-webpki = "0.21"
-webpki-roots = "0.21"
+webpki = "0.22"
+webpki-roots = "0.22"

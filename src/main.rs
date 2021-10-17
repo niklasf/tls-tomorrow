@@ -10,15 +10,12 @@ use clap::Clap;
 struct Args {
     /// Domains to check.
     domain: Vec<String>,
-    #[clap(flatten)]
-    opt: Opt,
-}
-
-#[derive(Clap, Debug)]
-struct Opt {
     /// Offset for system clock.
     #[clap(short, long, default_value = "0")]
     days: u32,
+    /// Skip testing TLS 1.2 with RSA.
+    #[clap(long)]
+    modern_defaults_only: bool,
 }
 
 fn main() {
@@ -64,7 +61,8 @@ fn main() {
 
     let mut success = true;
     success &= check_all(modern_default_config, "modern defaults", verifier, &args);
-    success &= check_all(tls12_rsa_config, "tls12 rsa", verifier, &args);
+    success &=
+        args.modern_defaults_only || check_all(tls12_rsa_config, "tls12 rsa", verifier, &args);
     std::process::exit(if success { 0 } else { 1 });
 }
 
@@ -78,7 +76,7 @@ fn check_all(
         .dangerous()
         .set_certificate_verifier(Arc::new(DelayedVerifier {
             inner: verifier,
-            delay: Duration::from_secs(u64::from(args.opt.days) * 24 * 60 * 60),
+            delay: Duration::from_secs(u64::from(args.days) * 24 * 60 * 60),
         }));
 
     let config = Arc::new(config);
@@ -90,7 +88,7 @@ fn check_all(
             Err(err) => {
                 println!(
                     "{} with {} in {} days: {}",
-                    domain, config_name, args.opt.days, err
+                    domain, config_name, args.days, err
                 );
                 success = false;
             }

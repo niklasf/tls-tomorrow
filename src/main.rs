@@ -57,8 +57,14 @@ fn main() {
         .with_root_certificates(root_store.clone())
         .with_no_client_auth();
 
-    let success = check_all(tls12_rsa_config, "tls12 rsa", verifier, &args);
+    let modern_default_config = rustls::ClientConfig::builder()
+        .with_safe_defaults()
+        .with_root_certificates(root_store.clone())
+        .with_no_client_auth();
 
+    let mut success = true;
+    success &= check_all(modern_default_config, "modern defaults", verifier, &args);
+    success &= check_all(tls12_rsa_config, "tls12 rsa", verifier, &args);
     std::process::exit(if success { 0 } else { 1 });
 }
 

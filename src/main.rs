@@ -1,7 +1,9 @@
-use std::convert::TryFrom;
-use std::error::Error;
-use std::sync::Arc;
-use std::time::{Duration, SystemTime};
+use std::{
+    convert::TryFrom,
+    error::Error,
+    sync::Arc,
+    time::{Duration, SystemTime},
+};
 
 use clap::Clap;
 

@@ -1,6 +1,7 @@
 use std::{
     convert::TryFrom,
     error::Error,
+    net::ToSocketAddrs,
     sync::Arc,
     time::{Duration, SystemTime},
 };
@@ -101,9 +102,11 @@ fn check_all(
 
 fn check(domain: &str, config: Arc<rustls::ClientConfig>) -> Result<(), Box<dyn Error>> {
     let server_name = rustls::ServerName::try_from(domain).expect("server name");
-    let mut client = rustls::ClientConnection::new(config, server_name)?;
-    let mut socket = std::net::TcpStream::connect((domain, 443))?;
-    client.complete_io(&mut socket)?;
+    for addr in (domain, 443).to_socket_addrs()? {
+        let mut client = rustls::ClientConnection::new(config.clone(), server_name.clone())?;
+        let mut socket = std::net::TcpStream::connect_timeout(&addr, Duration::from_secs(10))?;
+        client.complete_io(&mut socket)?;
+    }
     Ok(())
 }
 

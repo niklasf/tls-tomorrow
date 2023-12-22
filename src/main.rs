@@ -6,18 +6,18 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use clap::Clap;
+use clap::Parser;
 
 /// Try to make TLS connections with manipulated system time.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 struct Args {
     /// Domains to check.
     domain: Vec<String>,
     /// Offset for system clock.
-    #[clap(short, long, default_value = "0")]
+    #[arg(short, long, default_value = "0")]
     days: u32,
     /// Skip testing TLS 1.2 with RSA.
-    #[clap(long)]
+    #[arg(long)]
     modern_defaults_only: bool,
 }
 
